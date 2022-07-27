@@ -21,4 +21,22 @@ public class BookItApiUtil {
        return finalToken;
 
     }
+
+    public static void deleteStudent(String studentEmail, String studentPassword){
+        String studentToken = BookItApiUtil.generateToken(studentEmail,studentPassword);
+
+        int idToDelete = given().accept(ContentType.JSON)
+                .and().header("Authorization", studentToken)
+                .get(ConfigurationReader.get("qa2api.url")+"/api/users/me")
+                .then().statusCode(200).extract().jsonPath().getInt("id");
+
+        String teacherToken = BookItApiUtil.generateToken(ConfigurationReader.get("teacher_email"),ConfigurationReader.get("teacher_password"));
+        given()
+                .and().header("Authorization", teacherToken)
+                .and().pathParam("id",idToDelete)
+                .when().delete(ConfigurationReader.get("qa2api.url")+"/api/students/{id}")
+                .then().statusCode(204);
+
+
+    }
 }
